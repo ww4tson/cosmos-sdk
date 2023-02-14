@@ -5,6 +5,7 @@ import (
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -14,6 +15,9 @@ type (
 	StakingKeeper interface {
 		ValidatorByConsAddr(sdk.Context, sdk.ConsAddress) stakingtypes.ValidatorI
 		GetParams(ctx sdk.Context) (params stakingtypes.Params)
+		GetDelegation(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (delegation types.Delegation, found bool)
+		GetValidator(ctx sdk.Context, addr sdk.ValAddress) (types.Validator, bool)
+		Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI // get a particular validator by operator address
 	}
 
 	// SlashingKeeper defines the slashing module interface contract needed by the
@@ -28,6 +32,8 @@ type (
 		SlashFractionDoubleSign(sdk.Context) sdk.Dec
 		Jail(sdk.Context, sdk.ConsAddress)
 		JailUntil(sdk.Context, sdk.ConsAddress, time.Time)
+		Unjail(ctx sdk.Context, validatorAddr sdk.ValAddress) error
+		HandleValidatorSignature(ctx sdk.Context, addr cryptotypes.Address, power int64, signed bool)
 	}
 
 	// AccountKeeper define the account keeper interface contracted needed by the evidence module

@@ -37,6 +37,21 @@ func (m *MockStakingKeeper) EXPECT() *MockStakingKeeperMockRecorder {
 	return m.recorder
 }
 
+// GetDelegation mocks base method.
+func (m *MockStakingKeeper) GetDelegation(ctx types0.Context, delAddr types0.AccAddress, valAddr types0.ValAddress) (types1.Delegation, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDelegation", ctx, delAddr, valAddr)
+	ret0, _ := ret[0].(types1.Delegation)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// GetDelegation indicates an expected call of GetDelegation.
+func (mr *MockStakingKeeperMockRecorder) GetDelegation(ctx, delAddr, valAddr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDelegation", reflect.TypeOf((*MockStakingKeeper)(nil).GetDelegation), ctx, delAddr, valAddr)
+}
+
 // GetParams mocks base method.
 func (m *MockStakingKeeper) GetParams(ctx types0.Context) types1.Params {
 	m.ctrl.T.Helper()
@@ -49,6 +64,35 @@ func (m *MockStakingKeeper) GetParams(ctx types0.Context) types1.Params {
 func (mr *MockStakingKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockStakingKeeper)(nil).GetParams), ctx)
+}
+
+// GetValidator mocks base method.
+func (m *MockStakingKeeper) GetValidator(ctx types0.Context, addr types0.ValAddress) (types1.Validator, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetValidator", ctx, addr)
+	ret0, _ := ret[0].(types1.Validator)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// GetValidator indicates an expected call of GetValidator.
+func (mr *MockStakingKeeperMockRecorder) GetValidator(ctx, addr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetValidator", reflect.TypeOf((*MockStakingKeeper)(nil).GetValidator), ctx, addr)
+}
+
+// Validator mocks base method.
+func (m *MockStakingKeeper) Validator(arg0 types0.Context, arg1 types0.ValAddress) types1.ValidatorI {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Validator", arg0, arg1)
+	ret0, _ := ret[0].(types1.ValidatorI)
+	return ret0
+}
+
+// Validator indicates an expected call of Validator.
+func (mr *MockStakingKeeperMockRecorder) Validator(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validator", reflect.TypeOf((*MockStakingKeeper)(nil).Validator), arg0, arg1)
 }
 
 // ValidatorByConsAddr mocks base method.
@@ -101,6 +145,18 @@ func (m *MockSlashingKeeper) GetPubkey(arg0 types0.Context, arg1 types.Address) 
 func (mr *MockSlashingKeeperMockRecorder) GetPubkey(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPubkey", reflect.TypeOf((*MockSlashingKeeper)(nil).GetPubkey), arg0, arg1)
+}
+
+// HandleValidatorSignature mocks base method.
+func (m *MockSlashingKeeper) HandleValidatorSignature(ctx types0.Context, addr types.Address, power int64, signed bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "HandleValidatorSignature", ctx, addr, power, signed)
+}
+
+// HandleValidatorSignature indicates an expected call of HandleValidatorSignature.
+func (mr *MockSlashingKeeperMockRecorder) HandleValidatorSignature(ctx, addr, power, signed interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleValidatorSignature", reflect.TypeOf((*MockSlashingKeeper)(nil).HandleValidatorSignature), ctx, addr, power, signed)
 }
 
 // HasValidatorSigningInfo mocks base method.
@@ -203,6 +259,20 @@ func (m *MockSlashingKeeper) Tombstone(arg0 types0.Context, arg1 types0.ConsAddr
 func (mr *MockSlashingKeeperMockRecorder) Tombstone(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tombstone", reflect.TypeOf((*MockSlashingKeeper)(nil).Tombstone), arg0, arg1)
+}
+
+// Unjail mocks base method.
+func (m *MockSlashingKeeper) Unjail(ctx types0.Context, validatorAddr types0.ValAddress) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unjail", ctx, validatorAddr)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unjail indicates an expected call of Unjail.
+func (mr *MockSlashingKeeperMockRecorder) Unjail(ctx, validatorAddr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unjail", reflect.TypeOf((*MockSlashingKeeper)(nil).Unjail), ctx, validatorAddr)
 }
 
 // MockAccountKeeper is a mock of AccountKeeper interface.

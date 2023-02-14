@@ -73,8 +73,6 @@ type KeeperTestSuite struct {
 	ctx sdk.Context
 
 	evidenceKeeper keeper.Keeper
-	bankKeeper     *evidencetestutil.MockBankKeeper
-	accountKeeper  *evidencetestutil.MockAccountKeeper
 	slashingKeeper *evidencetestutil.MockSlashingKeeper
 	stakingKeeper  *evidencetestutil.MockStakingKeeper
 	queryClient    types.QueryClient
@@ -93,8 +91,6 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	stakingKeeper := evidencetestutil.NewMockStakingKeeper(ctrl)
 	slashingKeeper := evidencetestutil.NewMockSlashingKeeper(ctrl)
-	accountKeeper := evidencetestutil.NewMockAccountKeeper(ctrl)
-	bankKeeper := evidencetestutil.NewMockBankKeeper(ctrl)
 
 	evidenceKeeper := keeper.NewKeeper(
 		encCfg.Codec,
@@ -105,7 +101,6 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	suite.stakingKeeper = stakingKeeper
 	suite.slashingKeeper = slashingKeeper
-	suite.bankKeeper = bankKeeper
 
 	router := types.NewRouter()
 	router = router.AddRoute(types.RouteEquivocation, testEquivocationHandler(evidenceKeeper))
@@ -113,8 +108,6 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	suite.ctx = testCtx.Ctx.WithBlockHeader(cmtproto.Header{Height: 1})
 	suite.encCfg = moduletestutil.MakeTestEncodingConfig(evidence.AppModuleBasic{})
-
-	suite.accountKeeper = accountKeeper
 
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.ctx, suite.encCfg.InterfaceRegistry)
 	types.RegisterQueryServer(queryHelper, evidenceKeeper)
