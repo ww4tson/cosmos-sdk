@@ -13,6 +13,7 @@ import (
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/golang/mock/gomock"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -97,8 +98,14 @@ func TestHandleDoubleSign(t *testing.T) {
 		slashingKeeper,
 	)
 
+	msr := baseapp.NewMsgServiceRouter()
+	qsr := baseapp.NewGRPCQueryRouter()
+
+	types.RegisterMsgServer(qsr, keeper.NewMsgServerImpl(*evidenceKeeper))
+
 	router := types.NewRouter()
 	router = router.AddRoute(types.RouteEquivocation, testEquivocationHandler(evidenceKeeper))
+	// router = router.AddRoute("bank", bankkeeper.SpendableBalanceByDenom)
 	evidenceKeeper.SetRouter(router)
 
 	depModules := []string{"auth", "bank", "slashing", "staking"}
@@ -131,7 +138,6 @@ func TestHandleDoubleSign(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(stakingParams.BondDenom, initAmt.Sub(selfDelegation))).String(),
 	)
 	assert.DeepEqual(t, selfDelegation, f.stakingKeeper.Validator(ctx, operatorAddr).GetBondedTokens())
-
 	// // // handle a signature to set signing info
 	// // f.slashingKeeper.HandleValidatorSignature(ctx, val.Address(), selfDelegation.Int64(), true)
 
