@@ -1355,6 +1355,12 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 	// Write the output to disk
 	filename := testutil.WriteToNewTempFile(s.T(), strings.Repeat(generatedStd.String(), 3))
 	defer filename.Close()
+	bz, err := os.ReadFile(filename.Name())
+	s.Require().NoError(err)
+	fmt.Println("txxx:================")
+	fmt.Println(string(bz))
+	fmt.Println("------------------------------------------------------")
+
 	val.ClientCtx.HomeDir = strings.Replace(val.ClientCtx.HomeDir, "simd", "simcli", 1)
 
 	queryResJSON, err := authclitestutil.QueryAccountExec(val.ClientCtx, addr)
@@ -1365,6 +1371,7 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 	// sign-batch file
 	addr1, err := account1.GetAddress()
 	s.Require().NoError(err)
+	fmt.Println("----------->", account.GetAccountNumber(), account.GetSequence())
 	res, err := authclitestutil.TxSignBatchExec(val.ClientCtx, addr1, filename.Name(), fmt.Sprintf("--%s=%s", flags.FlagChainID, val.ClientCtx.ChainID), "--multisig", addr.String(), fmt.Sprintf("--%s", flags.FlagOffline), fmt.Sprintf("--%s=%s", flags.FlagAccountNumber, fmt.Sprint(account.GetAccountNumber())), fmt.Sprintf("--%s=%s", flags.FlagSequence, fmt.Sprint(account.GetSequence())), "--signature-only")
 	s.Require().NoError(err)
 	s.Require().Equal(3, len(strings.Split(strings.Trim(res.String(), "\n"), "\n")))
@@ -1375,6 +1382,7 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 	// sign-batch file with account2
 	addr2, err := account2.GetAddress()
 	s.Require().NoError(err)
+	fmt.Println("===================>", account.GetAccountNumber(), account.GetSequence())
 	res, err = authclitestutil.TxSignBatchExec(val.ClientCtx, addr2, filename.Name(), fmt.Sprintf("--%s=%s", flags.FlagChainID, val.ClientCtx.ChainID), "--multisig", addr.String(), fmt.Sprintf("--%s", flags.FlagOffline), fmt.Sprintf("--%s=%s", flags.FlagAccountNumber, fmt.Sprint(account.GetAccountNumber())), fmt.Sprintf("--%s=%s", flags.FlagSequence, fmt.Sprint(account.GetSequence())), "--signature-only")
 	s.Require().NoError(err)
 	s.Require().Equal(3, len(strings.Split(strings.Trim(res.String(), "\n"), "\n")))
@@ -1383,6 +1391,7 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 	file2 := testutil.WriteToNewTempFile(s.T(), res.String())
 	defer file2.Close()
 	res, err = authclitestutil.TxMultiSignBatchExec(val.ClientCtx, filename.Name(), multisigRecord.Name, file1.Name(), file2.Name())
+	fmt.Println("response in stage 1 multisign ------>", res.String())
 	s.Require().NoError(err)
 	signedTxs := strings.Split(strings.Trim(res.String(), "\n"), "\n")
 
@@ -1397,6 +1406,48 @@ func (s *E2ETestSuite) TestMultisignBatch() {
 			s.Require().NoError(s.network.WaitForNextBlock())
 		}()
 	}
+
+	fmt.Println("stage1 completed")
+
+	// sign-batch file without offline mode
+	addr1, err = account1.GetAddress()
+	s.Require().NoError(err)
+	res, err = authclitestutil.TxSignBatchExec(val.ClientCtx, addr1, filename.Name(), fmt.Sprintf("--%s=%s", flags.FlagChainID, val.ClientCtx.ChainID), "--multisig", addr.String(), "--signature-only")
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(strings.Split(strings.Trim(res.String(), "\n"), "\n")))
+	// write sigs to file
+	file1 = testutil.WriteToNewTempFile(s.T(), res.String())
+	defer file1.Close()
+
+	// sign-batch file with account2
+	addr2, err = account2.GetAddress()
+	s.Require().NoError(err)
+	res, err = authclitestutil.TxSignBatchExec(val.ClientCtx, addr2, filename.Name(), fmt.Sprintf("--%s=%s", flags.FlagChainID, val.ClientCtx.ChainID), "--multisig", addr.String(), "--signature-only")
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(strings.Split(strings.Trim(res.String(), "\n"), "\n")))
+
+	fmt.Println("multisigning in stage 2")
+	// multisign the file
+	file2 = testutil.WriteToNewTempFile(s.T(), res.String())
+	defer file2.Close()
+	res, err = authclitestutil.TxMultiSignBatchExec(val.ClientCtx, filename.Name(), multisigRecord.Name, file1.Name(), file2.Name())
+	fmt.Println("response in stage 2 multisign ------>", res.String())
+	s.Require().NoError(err)
+	signedTxs = strings.Split(strings.Trim(res.String(), "\n"), "\n")
+
+	// Broadcast transactions.
+	for _, signedTx := range signedTxs {
+		func() {
+			signedTxFile := testutil.WriteToNewTempFile(s.T(), signedTx)
+			defer signedTxFile.Close()
+			val.ClientCtx.BroadcastMode = flags.BroadcastSync
+			_, err = authclitestutil.TxBroadcastExec(val.ClientCtx, signedTxFile.Name())
+			s.Require().NoError(err)
+			s.Require().NoError(s.network.WaitForNextBlock())
+		}()
+	}
+	fmt.Println("hoooorrrrrrrrrrrray")
+	panic("")
 }
 
 func (s *E2ETestSuite) TestGetAccountCmd() {

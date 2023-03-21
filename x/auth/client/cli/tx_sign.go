@@ -109,12 +109,16 @@ func makeSignBatchCmd() func(cmd *cobra.Command, args []string) error {
 					return err
 				}
 
-				acc, err := txFactory.AccountRetriever().GetAccount(clientCtx, addr)
+				// acc, err := txFactory.AccountRetriever().GetAccount(clientCtx, addr)
+				// if err != nil {
+				// 	return err
+				// }
+				accnum, seq, err := clientCtx.AccountRetriever.GetAccountNumberSequence(clientCtx, addr)
 				if err != nil {
 					return err
 				}
 
-				txFactory = txFactory.WithAccountNumber(acc.GetAccountNumber()).WithSequence(acc.GetSequence())
+				txFactory = txFactory.WithAccountNumber(accnum).WithSequence(seq)
 			} else {
 				txFactory = txFactory.WithAccountNumber(0).WithSequence(0)
 			}

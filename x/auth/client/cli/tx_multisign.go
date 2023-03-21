@@ -282,12 +282,17 @@ func makeBatchMultisignCmd() func(cmd *cobra.Command, args []string) error {
 		var signatureBatch [][]signingtypes.SignatureV2
 		for i := 2; i < len(args); i++ {
 			sigs, err := readSignaturesFromFile(clientCtx, args[i])
+			fmt.Printf("sigs %d\n ", i)
+			fmt.Println(sigs)
 			if err != nil {
 				return err
 			}
 
 			signatureBatch = append(signatureBatch, sigs)
 		}
+		fmt.Println("signature batch:======>")
+		fmt.Println(signatureBatch)
+		fmt.Println("============")
 
 		addr, err := k.GetAddress()
 		if err != nil {
@@ -302,6 +307,7 @@ func makeBatchMultisignCmd() func(cmd *cobra.Command, args []string) error {
 
 			txFactory = txFactory.WithAccountNumber(accnum).WithSequence(seq)
 		}
+		fmt.Println("acc &&& seq :", txFactory.AccountNumber(), txFactory.Sequence())
 
 		// prepare output document
 		closeFunc, err := setOutputFile(cmd)
@@ -313,7 +319,9 @@ func makeBatchMultisignCmd() func(cmd *cobra.Command, args []string) error {
 		clientCtx.WithOutput(cmd.OutOrStdout())
 
 		for i := 0; scanner.Scan(); i++ {
+			fmt.Println("scanner tx: ", scanner.Tx())
 			txBldr, err := txCfg.WrapTxBuilder(scanner.Tx())
+			fmt.Printf("txBldr.GetTx(): %v\n", txBldr.GetTx())
 			if err != nil {
 				return err
 			}
@@ -331,7 +339,14 @@ func makeBatchMultisignCmd() func(cmd *cobra.Command, args []string) error {
 				PubKey:        pubKey,
 			}
 
-			for _, sig := range signatureBatch {
+			fmt.Println("---------------------signing data---------------------")
+			fmt.Println(signingData)
+			fmt.Println("------------------------------------------------------")
+
+			// firstElems := make([]signingtypes.SignatureV2, len(signatureBatch))
+			for j, sig := range signatureBatch {
+				fmt.Printf("sig[%d]:", j)
+				fmt.Println(sig[i])
 				// When Textual is wired up, the context argument should be retrieved from the client context.
 				err = signing.VerifySignature(context.TODO(), sig[i].PubKey, signingData, sig[i].Data, txCfg.SignModeHandler(), txBldr.GetTx())
 				if err != nil {
@@ -341,7 +356,27 @@ func makeBatchMultisignCmd() func(cmd *cobra.Command, args []string) error {
 				if err := multisig.AddSignatureV2(multisigSig, sig[i], multisigPub.GetPubKeys()); err != nil {
 					return err
 				}
+				fmt.Println("multisig::;;;", multisigSig, "\n", sig[i])
 			}
+
+			// fmt.Println("first eleme")
+			// fmt.Println(firstElems)
+
+			// for i, sig := range signatureBatch {
+			// 	fmt.Printf("sig[%d]:", i)
+			// 	fmt.Println(sig[i])
+			// 	// When Textual is wired up, the context argument should be retrieved from the client context.
+			// 	err = signing.VerifySignature(context.TODO(), sig[i].PubKey, signingData, sig[i].Data, txCfg.SignModeHandler(), txBldr.GetTx())
+			// 	if err != nil {
+			// 		return fmt.Errorf("couldn't verify signature: %w %v", err, sig)
+			// 	}
+
+			// 	if err := multisig.AddSignatureV2(multisigSig, sig[i], multisigPub.GetPubKeys()); err != nil {
+			// 		return err
+			// 	}
+			// 	fmt.Println("multisig::;;;", multisigSig, "\n", sig[i])
+
+			// }
 
 			sigV2 := signingtypes.SignatureV2{
 				PubKey:   multisigPub,
@@ -409,6 +444,8 @@ func readSignaturesFromFile(ctx client.Context, filename string) (sigs []signing
 		return nil, err
 	}
 
+	fmt.Println("signatures from file: ")
+	fmt.Println(string(bz))
 	newString := strings.TrimSuffix(string(bz), "\n")
 	lines := strings.Split(newString, "\n")
 
