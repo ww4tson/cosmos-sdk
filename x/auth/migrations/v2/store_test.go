@@ -16,7 +16,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	v1 "github.com/cosmos/cosmos-sdk/x/auth/migrations/v1"
 	v4 "github.com/cosmos/cosmos-sdk/x/auth/migrations/v4"
@@ -29,18 +28,6 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
-
-type mockSubspace struct {
-	ps authtypes.Params
-}
-
-func newMockSubspace(ps authtypes.Params) mockSubspace {
-	return mockSubspace{ps: ps}
-}
-
-func (ms mockSubspace) GetParamSet(ctx sdk.Context, ps authexported.ParamSet) {
-	*ps.(*authtypes.Params) = ms.ps
-}
 
 func TestMigrateVestingAccounts(t *testing.T) {
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{})
@@ -64,8 +51,7 @@ func TestMigrateVestingAccounts(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	legacySubspace := newMockSubspace(authtypes.DefaultParams())
-	require.NoError(t, v4.Migrate(ctx, storeService, legacySubspace, cdc))
+	require.NoError(t, v4.Migrate(ctx, storeService, nil, cdc))
 
 	ctx = app.BaseApp.NewContext(false, cmtproto.Header{Time: time.Now()})
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
@@ -615,7 +601,7 @@ func TestMigrateVestingAccounts(t *testing.T) {
 			require.True(t, ok)
 			require.NoError(t, tc.garbageFunc(ctx, vestingAccount, accountKeeper))
 
-			m := keeper.NewMigrator(accountKeeper, app.GRPCQueryRouter(), legacySubspace)
+			m := keeper.NewMigrator(accountKeeper, app.GRPCQueryRouter())
 			require.NoError(t, m.Migrate1to2(ctx))
 
 			var expVested sdk.Coins

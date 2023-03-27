@@ -18,7 +18,7 @@ func TestParamsEqual(t *testing.T) {
 	require.NotEqual(t, p1, p2)
 }
 
-func TestParams_Validate(t *testing.T) {
+func TestParamsValidate(t *testing.T) {
 	tests := []struct {
 		name    string
 		params  types.Params

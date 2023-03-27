@@ -4,7 +4,6 @@ import (
 	"github.com/cosmos/gogoproto/grpc"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	v2 "github.com/cosmos/cosmos-sdk/x/auth/migrations/v2"
 	v3 "github.com/cosmos/cosmos-sdk/x/auth/migrations/v3"
 	v4 "github.com/cosmos/cosmos-sdk/x/auth/migrations/v4"
@@ -13,14 +12,13 @@ import (
 
 // Migrator is a struct for handling in-place store migrations.
 type Migrator struct {
-	keeper         AccountKeeper
-	queryServer    grpc.Server
-	legacySubspace exported.Subspace
+	keeper      AccountKeeper
+	queryServer grpc.Server
 }
 
 // NewMigrator returns a new Migrator.
-func NewMigrator(keeper AccountKeeper, queryServer grpc.Server, ss exported.Subspace) Migrator {
-	return Migrator{keeper: keeper, queryServer: queryServer, legacySubspace: ss}
+func NewMigrator(keeper AccountKeeper, queryServer grpc.Server) Migrator {
+	return Migrator{keeper: keeper, queryServer: queryServer}
 }
 
 // Migrate1to2 migrates from version 1 to 2.
@@ -56,7 +54,7 @@ func (m Migrator) Migrate2to3(ctx sdk.Context) error {
 // and managed by the x/params modules and stores them directly into the x/auth
 // module state.
 func (m Migrator) Migrate3to4(ctx sdk.Context) error {
-	return v4.Migrate(ctx, m.keeper.storeService, m.legacySubspace, m.keeper.cdc)
+	return v4.Migrate(ctx, m.keeper.storeService, nil, m.keeper.cdc)
 }
 
 // V45_SetAccount implements V45_SetAccount
