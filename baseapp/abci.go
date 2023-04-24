@@ -186,6 +186,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		app.deliverState.ctx = app.deliverState.ctx.
 			WithBlockHeader(req.Header).
 			WithBlockHeight(req.Header.Height)
+
 	}
 
 	gasMeter := app.getBlockGasMeter(app.deliverState.ctx)
@@ -194,7 +195,8 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		WithBlockGasMeter(gasMeter).
 		WithHeaderHash(req.Hash).
 		WithConsensusParams(app.GetConsensusParams(app.deliverState.ctx)).
-		WithVoteInfos(req.LastCommitInfo.GetVotes())
+		WithVoteInfos(req.LastCommitInfo.GetVotes()).
+		WithProposer(req.Header.ProposerAddress)
 
 	if app.checkState != nil {
 		app.checkState.ctx = app.checkState.ctx.
@@ -284,10 +286,11 @@ func (app *BaseApp) PrepareProposal(req abci.RequestPrepareProposal) (resp abci.
 	}
 
 	app.prepareProposalState.ctx = app.getContextForProposal(app.prepareProposalState.ctx, req.Height).
-		WithVoteInfos(app.voteInfos).
+		// WithVoteInfos(req.LocalLastCommit.Votes). TODO: WithVoteInfos is using the old vote type, this should be modified to the new type ExtendedVoteInfo
 		WithBlockHeight(req.Height).
 		WithBlockTime(req.Time).
 		WithProposer(req.ProposerAddress)
+		// TODO Set Evidence here
 
 	app.prepareProposalState.ctx = app.prepareProposalState.ctx.
 		WithConsensusParams(app.GetConsensusParams(app.prepareProposalState.ctx)).
@@ -341,11 +344,12 @@ func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) (resp abci.
 	app.setState(runTxProcessProposal, emptyHeader)
 
 	app.processProposalState.ctx = app.getContextForProposal(app.processProposalState.ctx, req.Height).
-		WithVoteInfos(app.voteInfos).
+		// WithVoteInfos(app.voteInfos). TODO: WithVoteInfos is using the old vote type, this should be modified to the new type ExtendedVoteInfo
 		WithBlockHeight(req.Height).
 		WithBlockTime(req.Time).
 		WithHeaderHash(req.Hash).
 		WithProposer(req.ProposerAddress)
+		// TODO Set Evidence here
 
 	app.processProposalState.ctx = app.processProposalState.ctx.
 		WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx)).

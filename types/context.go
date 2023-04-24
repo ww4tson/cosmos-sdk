@@ -24,12 +24,12 @@ and standard additions here would be better just to add to the Context struct
 type Context struct {
 	baseCtx              context.Context
 	ms                   storetypes.MultiStore
-	header               cmtproto.Header
+	header               cmtproto.Header // depreacted in .50
 	headerHash           []byte
 	chainID              string
 	txBytes              []byte
 	logger               log.Logger
-	voteInfo             []abci.VoteInfo
+	voteInfo             []abci.VoteInfo // Depreacted in 0.50
 	gasMeter             storetypes.GasMeter
 	blockGasMeter        storetypes.GasMeter
 	checkTx              bool
