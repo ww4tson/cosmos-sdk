@@ -95,10 +95,8 @@ func Example() {
 		panic(err)
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(integrationApp.Context())
-
 	// we should also check the state of the application
-	got, err := mintKeeper.Params.Get(sdkCtx)
+	got, err := mintKeeper.Params.Get(integrationApp.Context())
 	if err != nil {
 		panic(err)
 	}
